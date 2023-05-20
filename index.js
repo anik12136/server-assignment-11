@@ -25,11 +25,14 @@ async function run() {
     // await client.connect();
 
     const carsCollection = client.db('carToys').collection('carToysTabs');
+    const userToyCollection = client.db('carToys').collection('addedToys');
+
     app.get('/carToysTabs', async (req, res) => {
         const cursor = carsCollection.find();
         const result = await cursor.toArray();
         res.send(result);
     })
+    
 
     app.get('/carToysTabs/:id', async (req, res) => {
         const id = req.params.id;
@@ -43,6 +46,15 @@ async function run() {
         const result = await carsCollection.findOne(query, options);
         res.send(result);
     })
+
+    // userToys
+
+    app.post('/addedToys', async (req, res) => {
+        const body = req.body;
+        console.log(body);
+        const result = await userToyCollection.insertOne(body);
+        res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection

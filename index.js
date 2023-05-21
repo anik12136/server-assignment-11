@@ -4,6 +4,7 @@ const cors = require('cors');
 const port = process.env.PORT || 5000;
 require('dotenv').config()
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const { text } = require('express');
 
 app.use(cors());
 app.use(express.json());
@@ -20,11 +21,44 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        
 
         const carsCollection = client.db('carToys').collection('carToysTabs');
         const allToyCollection = client.db('carToys').collection('addedToys');
 
+        // search text
+        const collection = client.db('carToys').collection('addedToys');
+
+        // Create an index
+        collection.createIndex({ toy_name: 1 }, (err, result) => {
+            if (err) {
+                console.error('Error creating index:', err);
+                return;
+            }
+
+            console.log('Index created successfully:', result);
+
+            // Close the MongoDB connection
+            client.close();
+        });
+
+        app.get("/search/:text", async (req, res) => {
+            const searchText = req.params.text;
+
+            if (req.params.text == 'all') {
+                const allToy = collection.find();
+                const result = await allToy.toArray();
+                return res.send(result);
+            }
+            const result = await collection.find({
+                $or: [
+                    { toy_name: { $regex: searchText, $options: "i" } },
+                ],
+            }).toArray();
+            res.send(result);
+
+        })
+
+        // ...............
         app.get('/carToysTabs', async (req, res) => {
             const cursor = carsCollection.find();
             const result = await cursor.toArray();
@@ -43,7 +77,8 @@ async function run() {
             const result = await carsCollection.findOne(query, options);
             res.send(result);
         })
-        
+
+
 
         // userToys
 
@@ -56,7 +91,7 @@ async function run() {
 
         app.get("/allToys/:toyname", async (req, res) => {
             console.log(req.params.toyname);
-            if (req.params.toyname == "monster truck") {
+            if (req.params.toyname == "a") {
                 const searchToy = allToyCollection.find({ toy_name: req.params.toyname });
                 const result = await searchToy.toArray();
                 // console.log(result);
@@ -66,6 +101,15 @@ async function run() {
             const result = await allToy.toArray();
             res.send(result);
         })
+
+        app.get("/allToys/:email", async (req, res) => {
+            console.log(req.params.seller_email);
+            const allToy = allToyCollection.find({ seller_email: req.params.seller_email });
+            const result = await allToy.toArray();
+            res.send(result);
+        })
+
+
 
 
         // Send a ping to confirm a successful connection

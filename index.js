@@ -37,10 +37,10 @@ async function run() {
 
             console.log('Index created successfully:', result);
 
-            // Close the MongoDB connection
             client.close();
         });
 
+        // search data
         app.get("/search/:text", async (req, res) => {
             const searchText = req.params.text;
 
@@ -57,8 +57,8 @@ async function run() {
             res.send(result);
 
         })
-
         // ...............
+        
         app.get('/carToysTabs', async (req, res) => {
             const cursor = carsCollection.find();
             const result = await cursor.toArray();
@@ -79,8 +79,21 @@ async function run() {
         })
 
 
+        app.get('/toyDetail/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
 
-        // userToys
+            const options = {
+                projection: { seller_name:1,seller_email:1,toy_name:1,image:1,subCategory:1,price:1,rating:1,quantity:1,description:1 },
+            };
+
+            const result = await allToyCollection.findOne(query, options);
+            res.send(result);
+        })
+
+
+
+        // userToys insert
 
         app.post('/addedToys', async (req, res) => {
             const body = req.body;
@@ -89,25 +102,46 @@ async function run() {
             res.send(result);
         });
 
-        app.get("/allToys/:toyname", async (req, res) => {
-            console.log(req.params.toyname);
-            if (req.params.toyname == "a") {
-                const searchToy = allToyCollection.find({ toy_name: req.params.toyname });
-                const result = await searchToy.toArray();
-                // console.log(result);
-                return res.send(result);
-            }
-            const allToy = allToyCollection.find();
+        // app.get("/allToys/:toyname", async (req, res) => {
+        //     console.log(req.params.toyname);
+        //     if (req.params.toyname == "a") {
+        //         const searchToy = allToyCollection.find({ toy_name: req.params.toyname });
+        //         const result = await searchToy.toArray();
+        //         // console.log(result);
+        //         return res.send(result);
+        //     }
+        //     const allToy = allToyCollection.find();
+        //     const result = await allToy.toArray();
+        //     res.send(result);
+        // })
+
+
+        // email filtering
+
+        app.get("/myToys/:email", async (req, res) => {
+            console.log(req.params.email);
+            const allToy = allToyCollection.find({ seller_email: req.params.email });
             const result = await allToy.toArray();
             res.send(result);
         })
 
-        app.get("/allToys/:email", async (req, res) => {
-            console.log(req.params.seller_email);
-            const allToy = allToyCollection.find({ seller_email: req.params.seller_email });
-            const result = await allToy.toArray();
+
+        // update
+
+        app.put("/updateToy/:id",async (req,res) =>{
+            const id = req.params.id;
+            const body = req.body;
+            const filter={_id: new ObjectId(id)};
+            const updateToy ={
+                $set: {
+                    price: body.price,
+                    quantity: body.quantity,
+                    description: body.description,
+                },
+            };
+            const result = await allToyCollection.updateOne(filter,updateToy);
             res.send(result);
-        })
+        } );
 
 
 

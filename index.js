@@ -44,7 +44,7 @@ async function run() {
         app.get("/search/:text", async (req, res) => {
             const searchText = req.params.text;
 
-            if (req.params.text == 'all') {
+            if (req.params.text =="all") {
                 const allToy = collection.find();
                 const result = await allToy.toArray();
                 return res.send(result);
@@ -59,9 +59,10 @@ async function run() {
         })
         // ...............
         
-        app.get('/carToysTabs', async (req, res) => {
-            const cursor = carsCollection.find();
-            const result = await cursor.toArray();
+        app.get('/carToysTabs/:id', async (req, res) => {
+            // const cursor = carsCollection.find();
+            const allToy = carsCollection.find({ id: req.params.id });
+            const result = await allToy.toArray();
             res.send(result);
         })
 
@@ -102,18 +103,7 @@ async function run() {
             res.send(result);
         });
 
-        // app.get("/allToys/:toyname", async (req, res) => {
-        //     console.log(req.params.toyname);
-        //     if (req.params.toyname == "a") {
-        //         const searchToy = allToyCollection.find({ toy_name: req.params.toyname });
-        //         const result = await searchToy.toArray();
-        //         // console.log(result);
-        //         return res.send(result);
-        //     }
-        //     const allToy = allToyCollection.find();
-        //     const result = await allToy.toArray();
-        //     res.send(result);
-        // })
+       
 
 
         // email filtering

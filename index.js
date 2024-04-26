@@ -25,6 +25,12 @@ async function run() {
         const carsCollection = client.db('carToys').collection('carToysTabs');
         const allToyCollection = client.db('carToys').collection('addedToys');
 
+        // ----------sad LAb------------------------------------------------------------
+        const demoCourses = client.db("sadLab").collection("demoCourses");
+        const formCourses = client.db("sadLab").collection("formCourses");
+        const users = client.db("sadLab").collection("users");
+        // -----------end sad LAb-----------------------------------------------------------
+
         // search text
         const collection = client.db('carToys').collection('addedToys');
 
@@ -44,7 +50,7 @@ async function run() {
         app.get("/search/:text", async (req, res) => {
             const searchText = req.params.text;
 
-            if (req.params.text =="all") {
+            if (req.params.text == "all") {
                 const allToy = collection.find();
                 const result = await allToy.toArray();
                 return res.send(result);
@@ -58,7 +64,7 @@ async function run() {
 
         })
         // ...............
-        
+
         app.get('/carToysTabs/:id', async (req, res) => {
             // const cursor = carsCollection.find();
             const allToy = carsCollection.find({ id: req.params.id });
@@ -85,7 +91,7 @@ async function run() {
             const query = { _id: new ObjectId(id) }
 
             const options = {
-                projection: { seller_name:1,seller_email:1,toy_name:1,image:1,subCategory:1,price:1,rating:1,quantity:1,description:1 },
+                projection: { seller_name: 1, seller_email: 1, toy_name: 1, image: 1, subCategory: 1, price: 1, rating: 1, quantity: 1, description: 1 },
             };
 
             const result = await allToyCollection.findOne(query, options);
@@ -103,7 +109,7 @@ async function run() {
             res.send(result);
         });
 
-       
+
 
 
         // email filtering
@@ -118,20 +124,20 @@ async function run() {
 
         // update
 
-        app.put("/updateToy/:id",async (req,res) =>{
+        app.put("/updateToy/:id", async (req, res) => {
             const id = req.params.id;
             const body = req.body;
-            const filter={_id: new ObjectId(id)};
-            const updateToy ={
+            const filter = { _id: new ObjectId(id) };
+            const updateToy = {
                 $set: {
                     price: body.price,
                     quantity: body.quantity,
                     description: body.description,
                 },
             };
-            const result = await allToyCollection.updateOne(filter,updateToy);
+            const result = await allToyCollection.updateOne(filter, updateToy);
             res.send(result);
-        } );
+        });
 
         // delet
 
@@ -141,6 +147,45 @@ async function run() {
             const result = await allToyCollection.deleteOne(query);
             res.send(result);
         })
+
+
+
+        // ----------sad LAb------------------------------------------------------------
+        // Demo course .....api
+    app.get('/demoCourses' , async (req,res) => {
+        const result = await demoCourses.find().toArray();
+        res.send(result);
+    })
+
+    // formCourses courses that are posted by instructors ....api
+    app.get('/formCourses' , async (req,res) => {
+        const result = await formCourses.find().toArray();
+        res.send(result);
+    })
+
+    // insert courses to database from instructor
+    app.post('/formCourses', async(req,res) =>{
+        const newFormCourses = req.body;
+        // console.log(newFormCourses);
+        const result = await formCourses.insertOne(newFormCourses);
+        res.send(result);
+    })
+
+    // insert users to database from instructor
+    app.post('/users', async(req,res) =>{
+        const newUser = req.body;
+        // console.log(newFormCourses);
+        const result = await users.insertOne(newUser);
+        res.send(result);
+    })
+
+    // only one instructor class
+    app.get('/formCourses/:email', async (req, res) => {
+      const email = req.params.email;
+      const result = await formCourses.find({ email: email }).toArray();
+      res.send(result);
+      });
+        // -----------end sad LAb-----------------------------------------------------------
 
 
         // Send a ping to confirm a successful connection

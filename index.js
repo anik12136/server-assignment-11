@@ -29,6 +29,8 @@ async function run() {
         const demoCourses = client.db("sadLab").collection("demoCourses");
         const formCourses = client.db("sadLab").collection("formCourses");
         const users = client.db("sadLab").collection("users");
+        const courseRequest = client.db("sadLab").collection("courseRequest");
+        const communityPost = client.db("sadLab").collection("community");
         // -----------end sad LAb-----------------------------------------------------------
 
         // search text
@@ -139,7 +141,7 @@ async function run() {
             res.send(result);
         });
 
-        // delet
+        // delete
 
         app.delete('/delete/:id', async (req, res) => {
             const id = req.params.id;
@@ -152,39 +154,104 @@ async function run() {
 
         // ----------sad LAb------------------------------------------------------------
         // Demo course .....api
-    app.get('/demoCourses' , async (req,res) => {
-        const result = await demoCourses.find().toArray();
-        res.send(result);
-    })
+        app.get('/demoCourses', async (req, res) => {
+            const result = await demoCourses.find().toArray();
+            res.send(result);
+        })
 
-    // formCourses courses that are posted by instructors ....api
-    app.get('/formCourses' , async (req,res) => {
-        const result = await formCourses.find().toArray();
-        res.send(result);
-    })
+        // formCourses courses that are posted by instructors ....api
+        app.get('/formCourses', async (req, res) => {
+            const result = await formCourses.find().toArray();
+            res.send(result);
+        })
 
-    // insert courses to database from instructor
-    app.post('/formCourses', async(req,res) =>{
-        const newFormCourses = req.body;
-        // console.log(newFormCourses);
-        const result = await formCourses.insertOne(newFormCourses);
-        res.send(result);
-    })
+        // insert courses to database from instructor
+        app.post('/formCourses', async (req, res) => {
+            const newFormCourses = req.body;
+            // console.log(newFormCourses);
+            const result = await formCourses.insertOne(newFormCourses);
+            res.send(result);
+        })
 
-    // insert users to database from instructor
-    app.post('/users', async(req,res) =>{
-        const newUser = req.body;
-        // console.log(newFormCourses);
-        const result = await users.insertOne(newUser);
-        res.send(result);
-    })
+        // insert users to database from instructor
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            const query = { email: newUser.email }
+            const existingUser = await users.findOne(query);
 
-    // only one instructor class
-    app.get('/formCourses/:email', async (req, res) => {
-      const email = req.params.email;
-      const result = await formCourses.find({ email: email }).toArray();
-      res.send(result);
-      });
+            if (existingUser) {
+                return res.send({ message: 'user already exists' })
+              }
+            // console.log(newFormCourses);
+            const result = await users.insertOne(newUser);
+            res.send(result);
+        })
+
+        // insert course request to database from instructor
+        app.post('/courseRequest', async (req, res) => {
+            const newCourse = req.body;
+            const result = await courseRequest.insertOne(newCourse);
+            res.send(result);
+        })
+        // insert communityPost to database from instructor
+        app.post('/communityPost', async (req, res) => {
+            const newPost = req.body;
+            const result = await communityPost.insertOne(newPost);
+            res.send(result);
+        })
+
+        // get users ....api
+        app.get('/users', async (req, res) => {
+            const result = await users.find().toArray();
+            res.send(result);
+        })
+
+        // only one user api
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await users.find({ email: email }).toArray();
+            res.send(result);
+        });
+
+        // only one instructor class
+        app.get('/formCourses/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await formCourses.find({ email: email }).toArray();
+            res.send(result);
+        });
+
+         // only one user api BY ID
+         app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const result = await users.find({ _id: id }).toArray();
+            res.send(result);
+        });
+         // only one user api BY EMAIL
+         app.get('/users/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await users.find({ email: email }).toArray();
+            // const result = await users.find({ email: email })
+            res.send(result);
+        });
+
+    //    make instructor 
+    app.put("/users/:email", async (req, res) => {
+        const email = req.params.email;
+        const body = 'instructor';
+        console.log(email,body);
+        const filter = { email: email };
+        const updateUser = {
+            $set: {
+                role: body,
+            },
+        };
+        const result = await users.updateOne(filter, updateUser);
+        // console.log(result)
+        res.send(result);
+    });
+
+
+
         // -----------end sad LAb-----------------------------------------------------------
 
 

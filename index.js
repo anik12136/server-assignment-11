@@ -158,6 +158,11 @@ async function run() {
             const result = await demoCourses.find().toArray();
             res.send(result);
         })
+        // communityPost 
+        app.get('/communityPost', async (req, res) => {
+            const result = await communityPost.find().toArray();
+            res.send(result);
+        })
 
         // formCourses courses that are posted by instructors ....api
         app.get('/formCourses', async (req, res) => {

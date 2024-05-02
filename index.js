@@ -31,6 +31,7 @@ async function run() {
         const users = client.db("sadLab").collection("users");
         const courseRequest = client.db("sadLab").collection("courseRequest");
         const communityPost = client.db("sadLab").collection("community");
+        const bookmarks = client.db("sadLab").collection("bookmarks");
         // -----------end sad LAb-----------------------------------------------------------
 
         // search text
@@ -186,11 +187,34 @@ async function run() {
 
             if (existingUser) {
                 return res.send({ message: 'user already exists' })
-              }
+            }
             // console.log(newFormCourses);
             const result = await users.insertOne(newUser);
             res.send(result);
         })
+        // insert bookmarks to database from instructor
+        app.post('/bookmarks', async (req, res) => {
+            const newBookmark = req.body;
+            console.log(newBookmark);
+            const query = { idEmail: newBookmark.idEmail }
+            const existingBookmark = await bookmarks.findOne(query);
+
+            if (existingBookmark) {
+                return res.send({ message: 'bookmark already exists' })
+            }
+            // console.log(newFormCourses);
+            else {
+                const result = await bookmarks.insertOne(newBookmark);
+                res.send(result);
+            }
+        })
+
+        // get my bookmark
+        app.get('/bookmarks/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await bookmarks.find({ email: email }).toArray();
+            res.send(result);
+        });
 
         // insert course request to database from instructor
         app.post('/courseRequest', async (req, res) => {
@@ -225,35 +249,35 @@ async function run() {
             res.send(result);
         });
 
-         // only one user api BY ID
-         app.get('/users/:id', async (req, res) => {
+        // only one user api BY ID
+        app.get('/users/:id', async (req, res) => {
             const id = req.params.id;
             const result = await users.find({ _id: id }).toArray();
             res.send(result);
         });
-         // only one user api BY EMAIL
-         app.get('/users/:email', async (req, res) => {
+        // only one user api BY EMAIL
+        app.get('/users/:email', async (req, res) => {
             const email = req.params.email;
             const result = await users.find({ email: email }).toArray();
             // const result = await users.find({ email: email })
             res.send(result);
         });
 
-    //    make instructor 
-    app.put("/users/:email", async (req, res) => {
-        const email = req.params.email;
-        const body = 'instructor';
-        console.log(email,body);
-        const filter = { email: email };
-        const updateUser = {
-            $set: {
-                role: body,
-            },
-        };
-        const result = await users.updateOne(filter, updateUser);
-        // console.log(result)
-        res.send(result);
-    });
+        //    make instructor 
+        app.put("/users/:email", async (req, res) => {
+            const email = req.params.email;
+            const body = 'instructor';
+            console.log(email, body);
+            const filter = { email: email };
+            const updateUser = {
+                $set: {
+                    role: body,
+                },
+            };
+            const result = await users.updateOne(filter, updateUser);
+            // console.log(result)
+            res.send(result);
+        });
 
 
 

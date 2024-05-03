@@ -32,6 +32,8 @@ async function run() {
         const courseRequest = client.db("sadLab").collection("courseRequest");
         const communityPost = client.db("sadLab").collection("community");
         const bookmarks = client.db("sadLab").collection("bookmarks");
+        const cartCollection = client.db("sadLab").collection("carts");
+
         // -----------end sad LAb-----------------------------------------------------------
 
         // search text
@@ -159,11 +161,6 @@ async function run() {
             const result = await demoCourses.find().toArray();
             res.send(result);
         })
-        // communityPost 
-        app.get('/communityPost', async (req, res) => {
-            const result = await communityPost.find().toArray();
-            res.send(result);
-        })
 
         // formCourses courses that are posted by instructors ....api
         app.get('/formCourses', async (req, res) => {
@@ -209,7 +206,7 @@ async function run() {
             }
         })
 
-        // get my bookmark
+        // get bookmarks
         app.get('/bookmarks/:email', async (req, res) => {
             const email = req.params.email;
             const result = await bookmarks.find({ email: email }).toArray();
@@ -222,10 +219,24 @@ async function run() {
             const result = await courseRequest.insertOne(newCourse);
             res.send(result);
         })
+
+        // courseRequest 
+        app.get('/courseRequest', async (req, res) => {
+            const result = await courseRequest.find().toArray();
+            res.send(result);
+        })
+
+
         // insert communityPost to database from instructor
         app.post('/communityPost', async (req, res) => {
             const newPost = req.body;
             const result = await communityPost.insertOne(newPost);
+            res.send(result);
+        })
+
+        // communityPost 
+        app.get('/communityPost', async (req, res) => {
+            const result = await communityPost.find().toArray();
             res.send(result);
         })
 
@@ -276,6 +287,54 @@ async function run() {
             };
             const result = await users.updateOne(filter, updateUser);
             // console.log(result)
+            res.send(result);
+        });
+
+        // cart collection apis
+        // app.get('/carts', async (req, res) => {
+        //     const email = req.query.email;
+
+        //     if (!email) {
+        //         res.send([]);
+        //     }
+
+        //     const decodedEmail = req.decoded.email;
+        //     if (email !== decodedEmail) {
+        //         return res.status(403).send({ error: true, message: 'forbidden access' })
+        //     }
+
+        //     const query = { email: email };
+        //     const result = await cartCollection.find(query).toArray();
+        //     res.send(result);
+        // });
+
+
+        // app.post('/carts', async (req, res) => {
+        //     const item = req.body;
+        //     const result = await cartCollection.insertOne(item);
+        //     res.send(result);
+        // })
+
+        // it will be change for better functionality
+        app.post('/carts', async (req, res) => {
+            const newCart = req.body;
+            console.log(newCart);
+            const query = { idEmail: newCart.idEmail }
+            const existingCart = await cartCollection.findOne(query);
+
+            if (existingCart) {
+                return res.send({ message: 'Cart already exists' })
+            }
+            // console.log(newFormCourses);
+            else {
+                const result = await cartCollection.insertOne(newCart);
+                res.send(result);
+            }
+        })
+
+        app.get('/carts/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await cartCollection.find({ email: email }).toArray();
             res.send(result);
         });
 
